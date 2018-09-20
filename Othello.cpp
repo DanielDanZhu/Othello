@@ -296,6 +296,77 @@ class Board {
             }
             list.push_back(Piece(x, y, color));
         }
+        int countFlips(int x, int y, string color) {        ///Returns # of flips the move would induce
+            if (!legalMove(x, y, color)) {return 0;}
+            int currentx, currenty;
+            int numFlips = 0;
+
+            if (legalDown(x, y, color)) {
+                currenty = y-1;
+                while(getPiece(x, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currenty--;
+                }
+            }
+            if(legalUp(x, y, color)) {
+                currenty = y+1;
+                while(getPiece(x, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currenty++;
+                }
+            }
+            if(legalLeft(x, y, color)) {
+                currentx = x-1;
+                while(getPiece(currentx, y).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx--;
+                }
+            }
+            if(legalRight(x, y, color)) {
+                currentx = x+1;
+                while(getPiece(currentx, y).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx++;
+                }
+            }
+            if(legalUpLeft(x, y, color)) {
+                currentx = x-1;
+                currenty = y+1;
+                while(getPiece(currentx, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx--;
+                    currenty++;
+                }
+            }
+            if(legalUpRight(x, y, color)) {
+                currentx = x+1;
+                currenty = y+1;
+                while(getPiece(currentx, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx++;
+                    currenty++;
+                }
+            }
+            if(legalDownRight(x, y, color)) {
+                currentx = x+1;
+                currenty = y-1;
+                while(getPiece(currentx, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx++;
+                    currenty--;
+                }
+            }
+            if(legalDownLeft(x, y, color)) {
+                currentx = x-1;
+                currenty = y-1;
+                while(getPiece(currentx, currenty).getColor().compare(color) != 0) {
+                    numFlips++;
+                    currentx--;
+                    currenty--;
+                }
+            }
+            return numFlips;
+        }
         bool checkLegal(string color) {         ///Checks if legal move exists for specific color
             for (int x=1; x<=8; x++) {
                 for (int y=1; y<=8; y++) {
@@ -345,7 +416,10 @@ class Board {
                 }
                 placePiece(x, y, col[turn%2]);
 
-                turn++;
+                ///Turn loop if no legal moves exist for opponent
+                if (checkLegal(col[(turn+1)%2])) {
+                    turn++;
+                }
             } while (checkLegal("white") || checkLegal("black"));
 
             ///Win Screen
@@ -367,6 +441,7 @@ class Board {
             string col[2] = {"white", "black"};
             srand (time(NULL));
             int x, y;
+            int numFlips;
 
             do {
                 ///Player turn
@@ -378,7 +453,7 @@ class Board {
                         display();
                         cout << "Your turn (black)" << endl << endl;
                         if (first && turn!=1) {
-                            cout << "Computer placed a piece at (" << x << ", " << y << ")" << endl;
+                            cout << "Computer placed a piece at (" << x << ", " << y << ") and flipped " << numFlips << " pieces" << endl;
                         }
                         if(!legalMove(x, y, col[turn%2]) && !first) {
                             cout << "Illegal move" << endl;
@@ -397,10 +472,13 @@ class Board {
                         x = rand()%8 + 1;
                         y = rand()%8 + 1;
                     } while (!legalMove(x, y, col[turn%2]));
+                    numFlips = countFlips(x, y, col[turn%2]);
                     placePiece(x, y, col[turn%2]);
                 }
 
-                turn++;
+                if (checkLegal(col[(turn+1)%2])) {
+                    turn++;
+                }
             } while (checkLegal("white") || checkLegal("black"));
 
             ///Win Screen
@@ -418,6 +496,72 @@ class Board {
             }
         }
         void intermediateAI() {
+            int turn = 1;
+            string col[2] = {"white", "black"};
+            srand (time(NULL));
+            int x, y;
+            int maxflips;
+
+            do {
+                ///Player turn
+                if (turn%2==1) {
+                    bool first = true;
+
+                    while(!legalMove(x, y, col[turn%2]) || first) {
+                        system("cls");
+                        display();
+                        cout << "Your turn (black)" << endl << endl;
+                        if (first && turn!=1) {
+                            cout << "Computer placed a piece at (" << x << ", " << y << ") and flipped "<< maxflips << " pieces" << endl;
+                        }
+                        if(!legalMove(x, y, col[turn%2]) && !first) {
+                            cout << "Illegal move" << endl;
+                        }
+                        cout << "X: ";
+                        cin >> x;
+                        cout << "Y: " ;
+                        cin >> y;
+                        first = false;
+                    }
+                    placePiece(x, y, col[turn%2]);
+                }
+                ///Computer turn
+                else if (turn%2==0) {
+                    maxflips = 0;
+                    int bestx, besty;
+                    for (x=1; x<=8; x++) {
+                        for (y=1; y<=8; y++) {
+                            //cout << "x: " << x << "   y: " << y << "   #flips: " << countFlips(x, y, col[turn%2]) << endl;
+                            if (countFlips(x, y, col[turn%2]) > maxflips) {
+                                maxflips = countFlips(x, y, col[turn%2]);
+                                bestx = x;
+                                besty = y;
+                            }
+                        }
+                    }
+                    x = bestx;
+                    y = besty;
+                    placePiece(x, y, col[turn%2]);
+                }
+
+                if (checkLegal(col[(turn+1)%2])) {
+                    turn++;
+                }
+            } while (checkLegal("white") || checkLegal("black"));
+
+            ///Win Screen
+            system("cls");
+            display();
+            cout << "Game over" << endl;
+            cout << "Black pieces: " << getBlackNum() << endl;
+            cout << "White pieces: " << getWhiteNum() << endl;
+            if (getBlackNum() > getWhiteNum()) {
+                cout << "You win" << endl;
+            } else if (getBlackNum() == getWhiteNum()) {
+                cout << "Tie" << endl;
+            } else {
+                cout << "Computer wins" << endl;
+            }
         }
 };
 
