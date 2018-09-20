@@ -2,6 +2,7 @@
 #include <vector>
 #include <string.h>
 #include <windows.h>
+#include <time.h>
 
 using namespace std;
 
@@ -311,20 +312,29 @@ class Board {
             list.push_back(Piece(4, 5, "white"));
             list.push_back(Piece(5, 4, "white"));
         }
-        void execute() {
+        void chooseMode() {
+            int choose;
+            cout << "Choose mode:" << endl << "(1)Free play" << endl << "(2)Beginner AI" << endl << "(3)Intermediate AI" << endl;
+            cin >> choose;
+            if (choose==1) {freePlay();}
+            else if (choose==2) {beginnerAI();}
+            else if (choose==3) {intermediateAI();}
+        }
+        void freePlay() {
             int turn = 1;
-            int gameOver = 0;
             string col[2] = {"white", "black"};
+
+            ///Game loop
             do {
                 bool first = true;
                 int x, y;
 
-                ///Game loop
-                while(!legalMove(x, y, col[turn]) || first) {
+                ///Turn loop for illegal moves
+                while(!legalMove(x, y, col[turn%2]) || first) {
                     system("cls");
                     display();
-                    cout << col[turn] << "'s turn" << endl << endl;
-                    if(!legalMove(x, y, col[turn]) && !first) {
+                    cout << col[turn%2] << "'s turn" << endl << endl;
+                    if(!legalMove(x, y, col[turn%2]) && !first) {
                         cout << "Illegal move" << endl;
                     }
                     cout << "X: ";
@@ -333,11 +343,9 @@ class Board {
                     cin >> y;
                     first = false;
                 }
-                placePiece(x, y, col[turn]);
+                placePiece(x, y, col[turn%2]);
 
-                if (checkLegal(col[(turn+1)%2])) {
-                    turn = (turn+1)%2;
-                }
+                turn++;
             } while (checkLegal("white") || checkLegal("black"));
 
             ///Win Screen
@@ -354,11 +362,68 @@ class Board {
                 cout << "White wins" << endl;
             }
         }
+        void beginnerAI() {
+            int turn = 1;
+            string col[2] = {"white", "black"};
+            srand (time(NULL));
+            int x, y;
+
+            do {
+                ///Player turn
+                if (turn%2==1) {
+                    bool first = true;
+
+                    while(!legalMove(x, y, col[turn%2]) || first) {
+                        system("cls");
+                        display();
+                        cout << "Your turn (black)" << endl << endl;
+                        if (first && turn!=1) {
+                            cout << "Computer placed a piece at (" << x << ", " << y << ")" << endl;
+                        }
+                        if(!legalMove(x, y, col[turn%2]) && !first) {
+                            cout << "Illegal move" << endl;
+                        }
+                        cout << "X: ";
+                        cin >> x;
+                        cout << "Y: " ;
+                        cin >> y;
+                        first = false;
+                    }
+                    placePiece(x, y, col[turn%2]);
+                }
+                ///Computer turn
+                else if (turn%2==0) {
+                    do {
+                        x = rand()%8 + 1;
+                        y = rand()%8 + 1;
+                    } while (!legalMove(x, y, col[turn%2]));
+                    placePiece(x, y, col[turn%2]);
+                }
+
+                turn++;
+            } while (checkLegal("white") || checkLegal("black"));
+
+            ///Win Screen
+            system("cls");
+            display();
+            cout << "Game over" << endl;
+            cout << "Black pieces: " << getBlackNum() << endl;
+            cout << "White pieces: " << getWhiteNum() << endl;
+            if (getBlackNum() > getWhiteNum()) {
+                cout << "You win" << endl;
+            } else if (getBlackNum() == getWhiteNum()) {
+                cout << "Tie" << endl;
+            } else {
+                cout << "Computer wins" << endl;
+            }
+        }
+        void intermediateAI() {
+        }
 };
 
 int main() {
     Board b;
-    b.execute();
+    b.chooseMode();
 
     return 0;
 }
