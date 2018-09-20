@@ -222,11 +222,11 @@ class Board {
             }
             return false;
         }
-        bool legalMove(int x, int y, string color) {
+        bool legalMove(int x, int y, string color) {        ///Checks if legal move exists at location for specific color
             if (pAtLoc(x, y)|| !inRange(x, y)) {return false;}
             return legalDown(x, y, color) || legalUp(x, y, color) || legalLeft(x, y, color) || legalRight(x, y, color) || legalUpLeft(x, y, color) || legalUpRight(x, y, color) || legalDownRight(x, y, color) || legalDownLeft(x, y, color);
         }
-        void placePiece(int x, int y, string color) {
+        void placePiece(int x, int y, string color) {       ///Places piece and flips as needed
             int currentx, currenty;
 
             if (legalDown(x, y, color)) {
@@ -305,13 +305,11 @@ class Board {
         }
     public:
         Board() {
+            ///Initial board state
             list.push_back(Piece(4, 4, "black"));
             list.push_back(Piece(5, 5, "black"));
             list.push_back(Piece(4, 5, "white"));
             list.push_back(Piece(5, 4, "white"));
-            /*list.push_back(Piece(5, 5, "white"));
-            list.push_back(Piece(4, 6, "white"));
-            list.push_back(Piece(3, 7, "black"));*/
         }
         void execute() {
             int turn = 1;
@@ -321,6 +319,7 @@ class Board {
                 bool first = true;
                 int x, y;
 
+                ///Game loop
                 while(!legalMove(x, y, col[turn]) || first) {
                     system("cls");
                     display();
@@ -341,7 +340,19 @@ class Board {
                 }
             } while (checkLegal("white") || checkLegal("black"));
 
+            ///Win Screen
+            system("cls");
+            display();
             cout << "Game over" << endl;
+            cout << "Black pieces: " << getBlackNum() << endl;
+            cout << "White pieces: " << getWhiteNum() << endl;
+            if (getBlackNum() > getWhiteNum()) {
+                cout << "Black wins" << endl;
+            } else if (getBlackNum() == getWhiteNum()) {
+                cout << "Tie" << endl;
+            } else {
+                cout << "White wins" << endl;
+            }
         }
 };
 
